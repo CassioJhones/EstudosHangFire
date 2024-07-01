@@ -37,4 +37,37 @@ public class JobController : ControllerBase
 
         return Ok();
     }
+
+    [HttpPost]
+    [Route("CriarContinuationJob")]
+    public ActionResult CriarContinuationJob()
+    {
+        //Serviços executados em sequencia
+        DateTime agendamento = DateTime.UtcNow.AddSeconds(3);
+        DateTimeOffset dateTimeOffset = new(agendamento);
+
+        string JobId_01 = BackgroundJob.Schedule(() => Console.WriteLine("Tarefa Agendada"), dateTimeOffset);
+        string JobId_02 = BackgroundJob.ContinueJobWith(JobId_01, () => Console.WriteLine("Segundo Job"));
+        string JobId_03 = BackgroundJob.ContinueJobWith(JobId_02, () => Console.WriteLine("Terceiro Job"));
+        string JobId_04 = BackgroundJob.ContinueJobWith(JobId_03, () => Console.WriteLine("Quarto Job"));
+
+        return Ok();
+    }
+
+    [HttpPost]
+    [Route("CriarRecurringJob")]
+    public ActionResult CriarRecurringJob()
+    {
+        //Serviços recorrentes por tempo determinado exemplo: a cada 5s, a cada 1 semana, a cada 1 dia;
+        //Necessario usar CronExpression
+        string cadaUmMinuto = "* * * * *";
+        string cadaUmaHora = "0 0 * * * ? *";
+        string cadaUmDia = "0 0 0 * * ? *";
+        string cadaUmaSemana = "0 0 0 ? * MON *";
+
+        RecurringJob.AddOrUpdate("Serviço Recorrente 01",
+            ()=> Console.WriteLine("Serviço Recorrente Realizado"), cadaUmMinuto);
+
+        return Ok();
+    }
 }
