@@ -1,0 +1,6 @@
+@EstudoHangFire_HostAddress = http://localhost:5075
+
+GET {{EstudoHangFire_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
