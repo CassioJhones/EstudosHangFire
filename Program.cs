@@ -1,25 +1,21 @@
 using Hangfire;
+using HangfireBasicAuthenticationFilter;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-
 builder.Services.AddHangfire((sp, config) =>
-{
-    var connectionString = sp.GetRequiredService<IConfiguration>().GetConnectionString("ConexaoPadrao");
+{//ConnectionString presente no appconfig.json
+    string? connectionString = sp.GetRequiredService<IConfiguration>().GetConnectionString("ConexaoPadrao");
     config.UseSqlServerStorage(connectionString);
 });
 builder.Services.AddHangfireServer();
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -27,9 +23,23 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
 
+//https://localhost:7279/HangDashboard/ Link do DashBoard do HangFire
+app.UseHangfireDashboard("/HangDashboard",new DashboardOptions
+{
+    DashboardTitle = "EstudosHangFire",
+    DarkModeEnabled = true,
+    StatsPollingInterval = 500,
+    Authorization = new[]
+    {
+        new HangfireCustomBasicAuthenticationFilter
+        {//usuario e senha para acessar o Dashboard
+            User="admin",
+            Pass="admin"
+        }
+    }
+});
 app.MapControllers();
 
 app.Run();
