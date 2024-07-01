@@ -1,5 +1,4 @@
 ﻿using Hangfire;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EstudoHangFire.Controllers;
@@ -7,11 +6,10 @@ namespace EstudoHangFire.Controllers;
 [ApiController]
 public class JobController : ControllerBase
 {
-
     [HttpGet]
     public void ListaInteiros()
     {
-        for (int i = 0; i < 1000000; i++)
+        for (int i = 0; i < 100000; i++)
         {
             Console.WriteLine(i);
         }
@@ -24,9 +22,19 @@ public class JobController : ControllerBase
         //Enfileiramento de serviços, métodos
         BackgroundJob.Enqueue(() => Console.WriteLine("Serviço em segundo plano"));
         BackgroundJob.Enqueue(() => ListaInteiros());
-
         return Ok();
     }
 
+    [HttpPost]
+    [Route("CriarScheduleJob")]
+    public ActionResult CriarScheduleJob()
+    {
+        //Agendamento de serviços, métodos
+        DateTime agendamento = DateTime.UtcNow.AddSeconds(5);
+        DateTimeOffset dateTimeOffset = new(agendamento);
 
+        BackgroundJob.Schedule(() => Console.WriteLine("Tarefa Agendada"), dateTimeOffset);
+
+        return Ok();
+    }
 }
