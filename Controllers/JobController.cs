@@ -6,14 +6,7 @@ namespace EstudoHangFire.Controllers;
 [ApiController]
 public class JobController : ControllerBase
 {
-    [HttpGet]
-    public void ListaInteiros()
-    {
-        for (int i = 0; i < 100000; i++)
-        {
-            Console.WriteLine(i);
-        }
-    }
+
 
     [HttpPost]
     [Route("CriarBackgroundJob")]
@@ -23,6 +16,11 @@ public class JobController : ControllerBase
         BackgroundJob.Enqueue(() => Console.WriteLine("Serviço em segundo plano"));
         BackgroundJob.Enqueue(() => ListaInteiros());
         return Ok();
+    }
+    public void ListaInteiros()
+    {
+        for (int i = 0; i < 100000; i++)
+            Console.WriteLine($"Contagem: {i}");
     }
 
     [HttpPost]
@@ -59,15 +57,30 @@ public class JobController : ControllerBase
     public ActionResult CriarRecurringJob()
     {
         //Serviços recorrentes por tempo determinado exemplo: a cada 5s, a cada 1 semana, a cada 1 dia;
-        //Necessario usar CronExpression
-        string cadaUmMinuto = "* * * * *";
-        string cadaUmaHora = "0 0 * * * ? *";
-        string cadaUmDia = "0 0 0 * * ? *";
-        string cadaUmaSemana = "0 0 0 ? * MON *";
+        //Necessario usar [-CronExpression-]
 
-        RecurringJob.AddOrUpdate("Serviço Recorrente 01",
-            ()=> Console.WriteLine("Serviço Recorrente Realizado"), cadaUmMinuto);
-
+        RecurringJob.AddOrUpdate("Serviço Recorrente 01", () => Console.WriteLine("Serviço Recorrente Realizado"), Cron.Minuto);
         return Ok();
     }
+
+    [HttpPost]
+    [Route("ApagarArquivosTemporarios")]
+    public ActionResult ApagarArquivosTemporarios()
+    {
+        //-Exemplo Simples
+        RecurringJob.AddOrUpdate("Arquivos Temporarios", () => Console.WriteLine("Arquivos Temporarios Deletados"), Cron.Semanal);
+        return Ok();
+    }
+
+    [HttpPost]
+    [Route("EnviarEmail")]
+    public ActionResult EnviarEmail()
+    {
+        BackgroundJob.Enqueue(() => EnviarEmailDeBoasVindas("cassiojhones@exemplo.com"));
+        return Ok();
+    }
+
+   //-Exemplo Simples de email
+    public void EnviarEmailDeBoasVindas(string email) =>
+            Console.WriteLine($"Enviando e-mail de boas-vindas para {email}");
 }
